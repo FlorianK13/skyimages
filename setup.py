@@ -24,6 +24,6 @@ setup(
         "Programming Language :: Python :: 3.10",
     ],
     python_requires=">=3.6, <4",
-    install_requires=["torch"],
+    install_requires=["torch", "requests", "tqdm"],
     extras_require={"dev": []},
 )
