@@ -9,7 +9,8 @@ images_to_folder_process = True
 
 
 year = 2014
-resolution = 128
+resolution = 256
+month_list = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
 
 path = os.path.join(
     os.path.expanduser("~"),
@@ -28,8 +29,6 @@ save_path = os.path.join(
     str(year),
 )
 
-# month_list = ["02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
-month_list = ["12"]
 
 if images_to_folder_process:
     for month in month_list:
@@ -44,7 +43,7 @@ if images_to_folder_process:
             if not os.path.exists(save_day_path):
                 os.makedirs(save_day_path)
 
-            for index, file in enumerate(os.listdir(folder_day_path)):
+            for file in os.listdir(folder_day_path):
                 filepath = os.path.join(folder_day_path, file)
                 file_savepath = os.path.join(save_day_path, file)
                 try:
