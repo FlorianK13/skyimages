@@ -8,9 +8,11 @@ pickle_process = False
 images_to_folder_process = True
 
 
-year = 2014
-resolution = 256
-month_list = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
+year = 2015
+resolution = 128
+month_list = [
+    "12",
+]  # ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
 
 path = os.path.join(
     os.path.expanduser("~"),
@@ -45,7 +47,7 @@ if images_to_folder_process:
 
             for file in os.listdir(folder_day_path):
                 filepath = os.path.join(folder_day_path, file)
-                file_savepath = os.path.join(save_day_path, file)
+                file_savepath = os.path.join(save_day_path, f"{year}_res{file}")
                 try:
                     image = Image.open(filepath)
                     resized_image = image.resize((resolution, resolution))

@@ -1,11 +1,12 @@
 import requests
-from skyimages.download.constants import folsom
-from skyimages.utils.config import get_project_home_dir
+from skyimages.constants import folsom_constants
 from tqdm import tqdm
 import numpy as np
 import time
-from os.path import join
 import os
+from os.path import join
+import tarfile
+import pdb
 
 
 class DownloadClass:
@@ -19,9 +20,6 @@ class DownloadClass:
             url = file_dict["url"]
             size_tqdm = file_dict["size[Bit]"]
             data = requests.get(url, stream=True)
-            import pdb
-
-            pdb.set_trace()
             time_a = time.perf_counter()
             with open(file_dir, "wb") as zfile, tqdm(file_dir, total=size_tqdm) as bar:
                 for chunk in data.iter_content():
@@ -37,23 +35,23 @@ class DownloadClass:
     def _confirm_download_from_user(self, url_dict: dict) -> None:
         pass
 
-    def _create_root_dir(self, root_dir: str) -> str:
-        if root_dir is None:
-            root_dir = get_project_home_dir()
-        elif isinstance(root_dir, str):
-            if not os.path.exists(self.root_dir):
-                os.mkdir(self.root_dir)
-
-        return root_dir
+    def _extract_tar_bz2(self, path, target) -> None:
+        with tarfile.open(path, "r:bz2") as tar:
+            tar.extractall(path=target)
+            pdb.set_trace()
 
 
 class FolsomDownloader(DownloadClass):
-    def __init__(self, root_dir: str = None, data_list: list = None):
-        self.data_list = data_list
-        if data_list is None:
-            self.data_list = folsom.DATA_LIST
-        self.url_dict = folsom.DOWNLOAD_URLS
-        self._confirm_download_from_user(self.url_dict)
-        self.root_dir = self._create_root_dir(root_dir)
+    def __init__(self, base_folder: str, target_folder: str, files: list = None):
+        self.files = files
+        self.url_dict = folsom_constants.DOWNLOAD_URLS
+        self._base_folder = base_folder
+        self._target_folder = target_folder
 
-        self._download_from_zenodo(url_dict=self.url_dict, root_dir=self.root_dir)
+    def download_and_extract(self, data_list: list) -> None:
+        self._confirm_download_from_user(self.url_dict)
+        # self._download_from_zenodo(url_dict=self.url_dict, root_dir=self.root_dir)
+        for data in data_list:
+            self._extract_tar_bz2(
+                path=self._base_folder / data, target=self._target_folder
+            )

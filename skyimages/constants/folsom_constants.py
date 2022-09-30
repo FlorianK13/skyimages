@@ -37,4 +37,6 @@ DOWNLOAD_URLS = {
     },
 }
 
-DATA_LIST = ["NAM", "irradiance", "weather", "images2014", "images2015", "images2016"]
+DATA_LIST = ["NAM", "irradiance", "weather"]
+TRAIN_DATA = ["2014_res128.tar.bz2", "2015_res128.tar.bz2"]
+TEST_DATA = ["2016_res128.tar.bz2"]
