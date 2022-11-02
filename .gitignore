@@ -1,7 +1,8 @@
 # own files
 
-scripts/manualtest.py
+scripts/manualtest.*
 csv/
+docs/raw/
 
 
 # Byte-compiled / optimized / DLL files

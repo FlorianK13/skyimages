@@ -36,7 +36,6 @@ class DownloadClass:
         self, url_dict: dict, number_loops: int = 3
     ) -> bool:
         """Returns True if dataset should be downloaded"""
-        pdb.set_trace()
         for _ in range(number_loops):
             answer = input(
                 f"Confirm that you want to download {url_dict['dataset']['size[MB]']} MB of data (y/n):"
