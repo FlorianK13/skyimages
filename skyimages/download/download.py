@@ -16,15 +16,17 @@ class DownloadClass:
         for filename, file_dict in url_dict.items():
             file_dir = join(root_dir, filename)
             url = file_dict["url"]
-            size_tqdm = file_dict["size[Bit]"]
+            size_tqdm = file_dict["size[MB]"]
             data = requests.get(url, stream=True)
             time_a = time.perf_counter()
-            with open(file_dir, "wb") as zfile, tqdm(file_dir, total=size_tqdm) as bar:
-                for chunk in data.iter_content():
+            with open(file_dir, "wb") as zfile, tqdm(
+                desc=file_dir, total=size_tqdm, unit="MB"
+            ) as bar:
+                for chunk in data.iter_content(chunk_size=1024 * 1024):
                     if chunk:
                         zfile.write(chunk)
                         zfile.flush()
-                    bar.update(len(chunk))
+                    bar.update()
             time_b = time.perf_counter()
             print(
                 f"Download of {filename} is finished. It took {int(np.around(time_b - time_a))} seconds."
