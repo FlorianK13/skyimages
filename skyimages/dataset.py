@@ -252,9 +252,10 @@ class SKIPPDDataSet(VisionDataset):
 
     def _check_integrity(self) -> bool:
         """Returns `True` if at least one file of `.hdf5` format is in the raw folder."""
-        return bool(
-            [file for _, _, file in os.walk(self._raw_folder) if ".hdf5" in file]
-        )
+        files_list = [
+            item for _, _, sublist in os.walk(self._raw_folder) for item in sublist
+        ]
+        return bool([file for file in files_list if ".hdf5" in file])
 
 
 class FolsomDataSet(VisionDataset):
