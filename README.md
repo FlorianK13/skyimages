@@ -26,7 +26,8 @@ To download the dataset SKIPP'D ([source](https://arxiv.org/abs/2207.00913)) and
 run the following code in python
 
 ```python
-from skyimages.dataset.dataset import SKIPPDDataSet
+from skyimages.dataset import SKIPPDDataSet
+import torch
 
 
 traindata = SKIPPDDataSet(download=True)
