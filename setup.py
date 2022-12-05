@@ -14,7 +14,7 @@ setup(
         "skyimages.dataset",
         "skyimages.download",
     ],
-    version="0.0.1",
+    version="0.0.1test1",
     description="Downloading sky images for ML applications",
     long_description=long_description,
     long_description_content_type="text/markdown",
