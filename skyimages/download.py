@@ -13,7 +13,8 @@ class DownloadClass:
 
     def _download_from_urldict(self, url_dict: dict, root_dir: str) -> None:
 
-        for filename, file_dict in url_dict.items():
+        for file_dict in url_dict.values():
+            filename = file_dict["filename"]
             file_dir = join(root_dir, filename)
             url = file_dict["url"]
             size_tqdm = file_dict["size[MB]"]
