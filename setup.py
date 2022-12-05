@@ -9,19 +9,22 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="skyimages",
+    version="0.0.1a3",
+    description="Downloading sky image datasets for pytorch applications",
+    author="Florian Kotthoff",
+    author_email="flo.pypi@posteo.de",
+    url="https://github.com/FlorianK13/skyimages",
     packages=[
         "skyimages",
-        "skyimages.dataset",
-        "skyimages.download",
     ],
-    version="0.0.1test1",
-    description="Downloading sky images for ML applications",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author="Florian Kotthoff",
-    author_email="kotthoff@fortiss.org",
     classifiers=[
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.8",
+        "Development Status :: 2 - Pre-Alpha",
+        "Intended Audience :: Science/Research",
     ],
     python_requires=">=3.6, <4",
     install_requires=["torch", "requests", "tqdm", "h5py"],
