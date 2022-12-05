@@ -1,6 +1,6 @@
 from torchvision.datasets import VisionDataset
 from skyimages import constants
-from skyimages.download.download import FolsomDownloader, SKIPPDDownloader
+from skyimages.download import FolsomDownloader, SKIPPDDownloader
 from skyimages.utils import create_directories, files_already_downloaded
 import os
 import pathlib
