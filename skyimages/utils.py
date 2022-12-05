@@ -1,5 +1,4 @@
 import os
-import pdb
 
 
 def create_directories(directory_list):
@@ -21,7 +20,5 @@ def files_already_downloaded(raw_path: str, file_path_list: list) -> bool:
     for file in file_path_list:
         if file not in all_files:
             return False
-    print(
-        f"All files already downloaded. If you want to rerun the download, delete the following folder: {raw_path}"
-    )
+
     return True

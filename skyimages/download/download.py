@@ -1,12 +1,10 @@
 import requests
-from skyimages.constants import folsom_constants, skippd_constants
+from skyimages import constants
 from tqdm import tqdm
 import numpy as np
 import time
-import os
 from os.path import join
 import tarfile
-import pdb
 
 
 class DownloadClass:
@@ -55,13 +53,12 @@ class DownloadClass:
     def _extract_tar_bz2(self, path, target) -> None:
         with tarfile.open(path, "r:bz2") as tar:
             tar.extractall(path=target)
-            pdb.set_trace()
 
 
 class FolsomDownloader(DownloadClass):
     def __init__(self, base_folder: str, target_folder: str, files: list = None):
         self.files = files
-        self.url_dict = folsom_constants.DOWNLOAD_URLS
+        self.url_dict = constants.FOLSOM_DOWNLOAD_URLS
         self._base_folder = base_folder
         self._target_folder = target_folder
 
@@ -78,7 +75,7 @@ class FolsomDownloader(DownloadClass):
 class SKIPPDDownloader(DownloadClass):
     def __init__(self, base_folder: str, target_folder: str, files: list = None):
         self.files = files
-        self.url_dict = skippd_constants.DOWNLOAD_URLS
+        self.url_dict = constants.SKIPPD_DOWNLOAD_URLS
         self._base_folder = base_folder
         self._target_folder = target_folder
 

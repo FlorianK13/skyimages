@@ -3,6 +3,7 @@
 scripts/manualtest.*
 csv/
 docs/raw/
+*pth
 
 
 # Byte-compiled / optimized / DLL files

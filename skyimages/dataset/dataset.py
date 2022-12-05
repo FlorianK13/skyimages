@@ -1,4 +1,5 @@
 from torchvision.datasets import VisionDataset
+from skyimages import constants
 from skyimages.download.download import FolsomDownloader, SKIPPDDownloader
 from skyimages.utils import create_directories, files_already_downloaded
 import os
@@ -7,9 +8,8 @@ import pandas as pd
 import numpy as np
 from PIL import Image
 from torchvision.datasets.utils import check_integrity
-from skyimages.constants import folsom_constants, constants, skippd_constants
+from skyimages import constants
 from typing import Any, Tuple
-import pdb
 import h5py
 import torch
 
@@ -65,20 +65,22 @@ class SKIPPDDataSet(VisionDataset):
         self._anns_folder = self._base_folder / "annotations"
         self._raw_folder = self._base_folder / "raw"
 
-        self._download_urls = skippd_constants.DOWNLOAD_URLS
+        self._download_urls = constants.SKIPPD_DOWNLOAD_URLS
 
         ### From hdf5
         self.data_info = []
+        # List of dictionaries, each dictionary contains info of one dataset of a specific hdf5 file
         self.data_cache = {}
+        # Dictionary: Keys are the filepaths of the hdf5 files, value is a list of the dataset within the hdf5 file
         self.data_cache_size = data_cache_size
         self.transform = transform
 
         if self.train:
-            self.hdf5_images_key = "trainval", "images_log"
-            self.hdf5_annotations_key = "trainval", "pv_log"
+            self.hdf5_images_key = "/trainval/images_log"
+            self.hdf5_annotations_key = "/trainval/pv_log"
         else:
-            self.hdf5_images_key = "test", "images_log"
-            self.hdf5_annotations_key = "test", "pv_log"
+            self.hdf5_images_key = "/test/images_log"
+            self.hdf5_annotations_key = "/test/pv_log"
         ### END Define Attributes
 
         create_directories([self._images_folder, self._anns_folder, self._raw_folder])
@@ -95,37 +97,58 @@ class SKIPPDDataSet(VisionDataset):
             )
             downloader.download_and_extract()
 
+        if not self._check_integrity():
+            raise RuntimeError(
+                "Dataset not found or corrupted. You can use download=True to download it"
+            )
+
         for h5dataset_fp in os.listdir(self._raw_folder):
-            self._add_data_infos(
+            self._fill_data_info_list_and_load_to_cache(
                 os.path.join(self._raw_folder, h5dataset_fp), load_data
             )
+        # self.data_info =
+        # [{'file_path': 'C:\\Users\\kotthoff\\.skyimages\\skippd\\raw\\2017_2019_images_pv_processed.hdf5', 'name': '/test/images_log', 'category': '/test', 'shape': (14003, 64, 64, 3), 'cache_idx': 0}
+        # {'file_path': 'C:\\Users\\kotthoff\\.skyimages\\skippd\\raw\\2017_2019_images_pv_processed.hdf5', 'name': '/test/pv_log', 'category': '/test', 'shape': (14003,), 'cache_idx': 1}
+        # {'file_path': 'C:\\Users\\kotthoff\\.skyimages\\skippd\\raw\\2017_2019_images_pv_processed.hdf5', 'name': '/trainval/images_log', 'category': '/trainval', 'shape': (349372, 64, 64, 3), 'cache_idx': 2}
+        # {'file_path': 'C:\\Users\\kotthoff\\.skyimages\\skippd\\raw\\2017_2019_images_pv_processed.hdf5', 'name': '/trainval/pv_log', 'category': '/trainval', 'shape': (349372,), 'cache_idx': 3}]
+
+        self.length = self.get_data_infos(self.hdf5_annotations_key)["shape"][0]
 
     def __getitem__(self, index):
         # get data
-        category = "/trainval" if self.train else "/test"
-        x = self.get_data(self.hdf5_images_key, category, index)
+        x = self.get_dataset(self.hdf5_images_key)[index]
         x = self.transform(x) if self.transform else torch.from_numpy(x)
 
         # get label
-        y = self.get_data(self.hdf5_annotations_key, index)
-        y = torch.from_numpy(y)
+        y = self.get_dataset(self.hdf5_annotations_key)[index]
+        y = torch.from_numpy(y) if type(y) == np.array else torch.tensor([y])
         return (x, y)
 
     def __len__(self):
-        return len(self.get_data_infos(self.hdf5_images_key))
+        return self.length
 
-    def _add_data_infos(self, file_path, load_data):
+    def _fill_data_info_list_and_load_to_cache(
+        self, file_path: pathlib.Path, load_data: bool
+    ):
+        """Fills the self.data_info list with basic info.
+
+        Parameters
+        ----------
+        file_path : pathlib.Path
+            Path of the folder for the raw data files
+        load_data : bool
+            If True, data is loaded to cache
+        """
         # h5_file = h5py.File(file_path)
         with h5py.File(file_path) as h5_file:
-
             # Walk through all groups, extracting datasets
             for _, group in h5_file.items():
                 for dname, ds in group.items():
                     # if data is not loaded its cache index is -1
                     idx = -1
                     if load_data:
-                        # add data to the data cache
                         idx = self._add_to_cache(ds[:], file_path)
+                        # Use ds[:] to avoid handeling closed datasets
 
                     # type is derived from the name of the dataset; we expect the dataset
                     # name to have a name such as 'data' or 'label' to identify its type
@@ -133,7 +156,7 @@ class SKIPPDDataSet(VisionDataset):
                     self.data_info.append(
                         {
                             "file_path": file_path,
-                            "type": dname,
+                            "name": f"{group.name}/{dname}",
                             "category": group.name,
                             "shape": ds.shape,
                             "cache_idx": idx,
@@ -151,18 +174,32 @@ class SKIPPDDataSet(VisionDataset):
         return len(self.data_cache[file_path]) - 1
 
     ### __getitem__ helper functions start from here
-    def get_data(self, type, category, i):
-        """Call this function anytime you want to access a chunk of data from the
+    def get_dataset(self, dataset_caller: str):
+        """Call this function anytime you want to access one of the
         dataset. This will make sure that the data is loaded in case it is
         not part of the data cache.
+
+        Parameters
+        ----------
+        dataset_caller : str
+            string that is used to find the dataset in the hdf5 file.
+            In the format: 'folder1/folder2/.../dataset_name'
+
+        Returns
+        -------
+        _type_
+            _description_
         """
-        fp = self.get_data_infos(type)[i]["file_path"]
+
+        dataset_metadata = self.get_data_infos(dataset_caller)
+
+        fp = dataset_metadata["file_path"]
         if fp not in self.data_cache:
-            pdb.set_trace()
             self._load_data(fp)
 
         # get new cache_idx assigned by _load_data_info
-        cache_idx = self.get_data_infos(type)[i]["cache_idx"]
+        cache_idx = dataset_metadata["cache_idx"]
+
         return self.data_cache[fp][cache_idx]
 
     def _load_data(self, file_path):
@@ -176,6 +213,7 @@ class SKIPPDDataSet(VisionDataset):
                     # add data to the data cache and retrieve
                     # the cache index
                     idx = self._add_to_cache(ds[:], file_path)
+                    # Use ds[:] to avoid handling closed hdf5 datasets
 
                     # find the beginning index of the hdf5 file we are looking for
                     file_idx = next(
@@ -188,27 +226,35 @@ class SKIPPDDataSet(VisionDataset):
                     self.data_info[file_idx + idx]["cache_idx"] = idx
 
         # remove an element from data cache if size was exceeded
-        if len(self.data_cache) > self.data_cache_size:
-            # remove one item from the cache at random
-            removal_keys = list(self.data_cache)
-            removal_keys.remove(file_path)
-            self.data_cache.pop(removal_keys[0])
-            # remove invalid cache_idx
-            self.data_info = [
-                {
-                    "file_path": di["file_path"],
-                    "type": di["type"],
-                    "shape": di["shape"],
-                    "cache_idx": -1,
-                }
-                if di["file_path"] == removal_keys[0]
-                else di
-                for di in self.data_info
-            ]
+        # if len(self.data_cache) > self.data_cache_size:
+        #     # remove one item from the cache at random
+        #     removal_keys = list(self.data_cache)
+        #     removal_keys.remove(file_path)
+        #     self.data_cache.pop(removal_keys[0])
+        #     # remove invalid cache_idx
+        #     self.data_info = [
+        #         {
+        #             "file_path": di["file_path"],
+        #             "name": di["name"],
+        #             "shape": di["shape"],
+        #             "cache_idx": -1,
+        #         }
+        #         if di["file_path"] == removal_keys[0]
+        #         else di
+        #         for di in self.data_info
+        #     ]
 
-    def get_data_infos(self, type):
-        """Get data infos belonging to a certain type of data."""
-        return [di for di in self.data_info if di["type"] in type]
+    def get_data_infos(self, dataset_caller) -> list:
+        """Get dataset metadata for the dataset defined by dataset_caller."""
+        for dataset_metadata in self.data_info:
+            if dataset_metadata["name"] == dataset_caller:
+                return dataset_metadata
+
+    def _check_integrity(self) -> bool:
+        """Returns `True` if at least one file of `.hdf5` format is in the raw folder."""
+        return bool(
+            [file for _, _, file in os.walk(self._raw_folder) if ".hdf5" in file]
+        )
 
 
 class FolsomDataSet(VisionDataset):
@@ -256,9 +302,9 @@ class FolsomDataSet(VisionDataset):
         self._raw_folder = self._base_folder / "raw"
 
         if self.train:
-            self._files = folsom_constants.TRAIN_DATA
+            self._files = constants.FOLSOM_TRAIN_DATA
         else:
-            self._files = folsom_constants.TEST_DATA
+            self._files = constants.FOLSOM_TEST_DATA
 
         create_directories([self._images_folder, self._anns_folder, self._raw_folder])
 
@@ -291,5 +337,4 @@ class FolsomDataSet(VisionDataset):
         for _, row in annotations_df:
             if row["image"] is np.nan:
                 continue
-            pdb.set_trace()
         return None

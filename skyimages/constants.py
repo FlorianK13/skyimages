@@ -1,4 +1,9 @@
-DOWNLOAD_URLS = {
+import os
+
+ROOT_DIR = os.path.join(os.path.expanduser("~"), ".skyimages")
+
+
+FOLSOM_DOWNLOAD_URLS = {
     "NAM1": {
         "filename": "Folsom_NAM_lat38.579454_lon-121.260320.csv",
         "url": "https://zenodo.org/record/2826939/files/Folsom_NAM_lat38.579454_lon-121.260320.csv?download=1",
@@ -37,6 +42,16 @@ DOWNLOAD_URLS = {
     },
 }
 
-DATA_LIST = ["NAM", "irradiance", "weather"]
-TRAIN_DATA = ["2014_res128.tar.bz2", "2015_res128.tar.bz2"]
-TEST_DATA = ["2016_res128.tar.bz2"]
+FOLSOM_DATA_LIST = ["NAM", "irradiance", "weather"]
+FOLSOM_TRAIN_DATA = ["2014_res128.tar.bz2", "2015_res128.tar.bz2"]
+FOLSOM_TEST_DATA = ["2016_res128.tar.bz2"]
+
+
+SKIPPD_DOWNLOAD_URLS = {
+    "dataset": {
+        "filename": "2017_2019_images_pv_processed.hdf5",
+        "url": "https://stacks.stanford.edu/file/druid:dj417rh1007/2017_2019_images_pv_processed.hdf5",
+        "size[MB]": 4557,
+        "size[Bit]": 38226886656,
+    },
+}
