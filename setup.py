@@ -27,6 +27,6 @@ setup(
         "Intended Audience :: Science/Research",
     ],
     python_requires=">=3.6, <4",
-    install_requires=["torch", "requests", "tqdm", "h5py"],
+    install_requires=["torch", "torchvision", "requests", "tqdm", "h5py", "pandas"],
     extras_require={"dev": []},
 )
