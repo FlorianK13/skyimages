@@ -6,8 +6,6 @@ import os
 import pathlib
 import pandas as pd
 import numpy as np
-from PIL import Image
-from torchvision.datasets.utils import check_integrity
 from skyimages import constants
 from typing import Any, Tuple
 import h5py
@@ -34,21 +32,24 @@ class SKIPPDDataSet(VisionDataset):
         Parameters
         ----------
         root : str, optional
-            _description_, by default None
+            root directory for the dataset. By default None, which means that the data
+            is saved to '~/.skyimages/skippd'
         train : bool, optional
-            _description_, by default True
+            If true, the training dataset is used, otherwise the test dataset is used,
+            by default True
         download : bool, optional
-            _description_, by default False
+            If true and the dataset was not yet downloaded, it is downloaded from https://purl.stanford.edu/dj417rh1007,
+            by default False
         stepsize : int, optional
-            _description_, by default 1
+            Not yet implemented, by default 1
         past_steps : int, optional
-            _description_, by default 5
+            Not yet implemented, by default 5
         future_steps : int, optional
-            _description_, by default 5
+            Not yet implemented, by default 5
         load_data : bool, optional
             Determines if the data is loaded to cache, by default True
         transform : _type_, optional
-            _description_, by default None
+            torchvision transforms, by default None
         """
         if root is None:
             root = constants.SKIPPD_ROOT_DIR
