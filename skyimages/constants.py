@@ -1,4 +1,5 @@
 import os
+import pathlib
 
 ROOT_DIR = os.path.join(os.path.expanduser("~"), ".skyimages")
 
@@ -55,3 +56,4 @@ SKIPPD_DOWNLOAD_URLS = {
         "size[Bit]": int(4262 * 1024 * 1024 * 8),
     },
 }
+SKIPPD_ROOT_DIR = pathlib.Path(os.path.join(ROOT_DIR, "skippd"))

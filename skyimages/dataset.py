@@ -26,7 +26,6 @@ class SKIPPDDataSet(VisionDataset):
         stepsize: int = 1,
         past_steps: int = 5,
         future_steps: int = 5,
-        data_cache_size: int = 3,
         load_data: bool = True,
         transform=None,
     ):
@@ -46,24 +45,21 @@ class SKIPPDDataSet(VisionDataset):
             _description_, by default 5
         future_steps : int, optional
             _description_, by default 5
-        data_cache_size : int, optional
-            _description_, by default 3
         load_data : bool, optional
             Determines if the data is loaded to cache, by default True
         transform : _type_, optional
             _description_, by default None
         """
         if root is None:
-            root = os.path.join(constants.ROOT_DIR)
+            root = constants.SKIPPD_ROOT_DIR
         super().__init__(root)
 
         ### Define Attributes
         self.train = train
         self.download = download
-        self._base_folder = pathlib.Path(self.root) / "skippd"
-        self._images_folder = self._base_folder / "images"
-        self._anns_folder = self._base_folder / "annotations"
-        self._raw_folder = self._base_folder / "raw"
+        self._images_folder = self.root / "images"
+        self._anns_folder = self.root / "annotations"
+        self._raw_folder = self.root / "raw"
 
         self._download_urls = constants.SKIPPD_DOWNLOAD_URLS
 
@@ -72,7 +68,6 @@ class SKIPPDDataSet(VisionDataset):
         # List of dictionaries, each dictionary contains info of one dataset of a specific hdf5 file
         self.data_cache = {}
         # Dictionary: Keys are the filepaths of the hdf5 files, value is a list of the dataset within the hdf5 file
-        self.data_cache_size = data_cache_size
         self.transform = transform
 
         if self.train:
@@ -88,7 +83,7 @@ class SKIPPDDataSet(VisionDataset):
         if (
             not files_already_downloaded(
                 raw_path=self._raw_folder,
-                file_path_list=[self._download_urls["dataset"]["filename"]],
+                file_list=[self._download_urls["dataset"]["filename"]],
             )
             and self.download
         ):
@@ -106,11 +101,6 @@ class SKIPPDDataSet(VisionDataset):
             self._fill_data_info_list_and_load_to_cache(
                 os.path.join(self._raw_folder, h5dataset_fp), load_data
             )
-        # self.data_info =
-        # [{'file_path': 'C:\\Users\\kotthoff\\.skyimages\\skippd\\raw\\2017_2019_images_pv_processed.hdf5', 'name': '/test/images_log', 'category': '/test', 'shape': (14003, 64, 64, 3), 'cache_idx': 0}
-        # {'file_path': 'C:\\Users\\kotthoff\\.skyimages\\skippd\\raw\\2017_2019_images_pv_processed.hdf5', 'name': '/test/pv_log', 'category': '/test', 'shape': (14003,), 'cache_idx': 1}
-        # {'file_path': 'C:\\Users\\kotthoff\\.skyimages\\skippd\\raw\\2017_2019_images_pv_processed.hdf5', 'name': '/trainval/images_log', 'category': '/trainval', 'shape': (349372, 64, 64, 3), 'cache_idx': 2}
-        # {'file_path': 'C:\\Users\\kotthoff\\.skyimages\\skippd\\raw\\2017_2019_images_pv_processed.hdf5', 'name': '/trainval/pv_log', 'category': '/trainval', 'shape': (349372,), 'cache_idx': 3}]
 
         self.length = self.get_data_infos(self.hdf5_annotations_key)["shape"][0]
 
@@ -225,25 +215,6 @@ class SKIPPDDataSet(VisionDataset):
                     # the data info should have the same index since we loaded it in the same way
                     self.data_info[file_idx + idx]["cache_idx"] = idx
 
-        # remove an element from data cache if size was exceeded
-        # if len(self.data_cache) > self.data_cache_size:
-        #     # remove one item from the cache at random
-        #     removal_keys = list(self.data_cache)
-        #     removal_keys.remove(file_path)
-        #     self.data_cache.pop(removal_keys[0])
-        #     # remove invalid cache_idx
-        #     self.data_info = [
-        #         {
-        #             "file_path": di["file_path"],
-        #             "name": di["name"],
-        #             "shape": di["shape"],
-        #             "cache_idx": -1,
-        #         }
-        #         if di["file_path"] == removal_keys[0]
-        #         else di
-        #         for di in self.data_info
-        #     ]
-
     def get_data_infos(self, dataset_caller) -> list:
         """Get dataset metadata for the dataset defined by dataset_caller."""
         for dataset_metadata in self.data_info:
@@ -292,15 +263,14 @@ class FolsomDataSet(VisionDataset):
             _description_
         """
         if root is None:
-            root = os.path.join(constants.ROOT_DIR)
+            root = os.path.join(constants.FOLSOM_ROOT_DIR)
         super().__init__(root)
         self.train = train
         self.download = download
         self.target = target
-        self._base_folder = pathlib.Path(self.root) / "folsom"
-        self._images_folder = self._base_folder / "images"
-        self._anns_folder = self._base_folder / "annotations"
-        self._raw_folder = self._base_folder / "raw"
+        self._images_folder = self.root / "images"
+        self._anns_folder = self.root / "annotations"
+        self._raw_folder = self.root / "raw"
 
         if self.train:
             self._files = constants.FOLSOM_TRAIN_DATA
