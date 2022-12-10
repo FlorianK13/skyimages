@@ -15,96 +15,7 @@ import torch
 # some of the code comes from: https://gist.github.com/branislav1991/4c143394bdad612883d148e0617bdccd
 
 
-class SKIPPDDataSet(VisionDataset):
-    def __init__(
-        self,
-        root: str = None,
-        train: bool = True,
-        download: bool = False,
-        stepsize: int = 1,
-        past_steps: int = 5,
-        future_steps: int = 5,
-        load_data: bool = True,
-        transform=None,
-    ):
-        """Pytorch dataset for the SKIPPD sky images.
-
-        Parameters
-        ----------
-        root : str, optional
-            root directory for the dataset. By default None, which means that the data
-            is saved to '~/.skyimages/skippd'
-        train : bool, optional
-            If true, the training dataset is used, otherwise the test dataset is used,
-            by default True
-        download : bool, optional
-            If true and the dataset was not yet downloaded, it is downloaded from https://purl.stanford.edu/dj417rh1007,
-            by default False
-        stepsize : int, optional
-            Not yet implemented, by default 1
-        past_steps : int, optional
-            Not yet implemented, by default 5
-        future_steps : int, optional
-            Not yet implemented, by default 5
-        load_data : bool, optional
-            Determines if the data is loaded to cache, by default True
-        transform : _type_, optional
-            torchvision transforms, by default None
-        """
-        if root is None:
-            root = constants.SKIPPD_ROOT_DIR
-        super().__init__(root)
-
-        ### Define Attributes
-        self.train = train
-        self.download = download
-        self._images_folder = self.root / "images"
-        self._anns_folder = self.root / "annotations"
-        self._raw_folder = self.root / "raw"
-
-        self._download_urls = constants.SKIPPD_DOWNLOAD_URLS
-
-        ### From hdf5
-        self.data_info = []
-        # List of dictionaries, each dictionary contains info of one dataset of a specific hdf5 file
-        self.data_cache = {}
-        # Dictionary: Keys are the filepaths of the hdf5 files, value is a list of the dataset within the hdf5 file
-        self.transform = transform
-
-        if self.train:
-            self.hdf5_images_key = "/trainval/images_log"
-            self.hdf5_annotations_key = "/trainval/pv_log"
-        else:
-            self.hdf5_images_key = "/test/images_log"
-            self.hdf5_annotations_key = "/test/pv_log"
-        ### END Define Attributes
-
-        create_directories([self._images_folder, self._anns_folder, self._raw_folder])
-
-        if (
-            not files_already_downloaded(
-                raw_path=self._raw_folder,
-                file_list=[self._download_urls["dataset"]["filename"]],
-            )
-            and self.download
-        ):
-            downloader = SKIPPDDownloader(
-                base_folder=self._raw_folder, target_folder=self._images_folder
-            )
-            downloader.download_and_extract()
-
-        if not self._check_integrity():
-            raise RuntimeError(
-                "Dataset not found or corrupted. You can use download=True to download it"
-            )
-
-        for h5dataset_fp in os.listdir(self._raw_folder):
-            self._fill_data_info_list_and_load_to_cache(
-                os.path.join(self._raw_folder, h5dataset_fp), load_data
-            )
-
-        self.length = self.get_data_infos(self.hdf5_annotations_key)["shape"][0]
-
+class HDF5DataSet(VisionDataset):
     def __getitem__(self, index):
         # get data
         x = self.get_dataset(self.hdf5_images_key)[index]
@@ -228,6 +139,97 @@ class SKIPPDDataSet(VisionDataset):
             item for _, _, sublist in os.walk(self._raw_folder) for item in sublist
         ]
         return bool([file for file in files_list if ".hdf5" in file])
+
+
+class SKIPPDDataSet(HDF5DataSet):
+    def __init__(
+        self,
+        root: str = None,
+        train: bool = True,
+        download: bool = False,
+        stepsize: int = 1,
+        past_steps: int = 5,
+        future_steps: int = 5,
+        load_data: bool = True,
+        transform=None,
+    ):
+        """Pytorch dataset for the SKIPPD sky images.
+
+        Parameters
+        ----------
+        root : str, optional
+            root directory for the dataset. By default None, which means that the data
+            is saved to '~/.skyimages/skippd'
+        train : bool, optional
+            If true, the training dataset is used, otherwise the test dataset is used,
+            by default True
+        download : bool, optional
+            If true and the dataset was not yet downloaded, it is downloaded from https://purl.stanford.edu/dj417rh1007,
+            by default False
+        stepsize : int, optional
+            Not yet implemented, by default 1
+        past_steps : int, optional
+            Not yet implemented, by default 5
+        future_steps : int, optional
+            Not yet implemented, by default 5
+        load_data : bool, optional
+            Determines if the data is loaded to cache, by default True
+        transform : _type_, optional
+            torchvision transforms, by default None
+        """
+        if root is None:
+            root = constants.SKIPPD_ROOT_DIR
+        super().__init__(root)
+
+        ### Define Attributes
+        self.train = train
+        self.download = download
+        self._images_folder = self.root / "images"
+        self._anns_folder = self.root / "annotations"
+        self._raw_folder = self.root / "raw"
+
+        self._download_urls = constants.SKIPPD_DOWNLOAD_URLS
+
+        ### From hdf5
+        self.data_info = []
+        # List of dictionaries, each dictionary contains info of one dataset of a specific hdf5 file
+        self.data_cache = {}
+        # Dictionary: Keys are the filepaths of the hdf5 files, value is a list of the dataset within the hdf5 file
+        self.transform = transform
+
+        if self.train:
+            self.hdf5_images_key = "/trainval/images_log"
+            self.hdf5_annotations_key = "/trainval/pv_log"
+        else:
+            self.hdf5_images_key = "/test/images_log"
+            self.hdf5_annotations_key = "/test/pv_log"
+        ### END Define Attributes
+
+        create_directories([self._images_folder, self._anns_folder, self._raw_folder])
+
+        if (
+            not files_already_downloaded(
+                raw_path=self._raw_folder,
+                file_list=[self._download_urls["dataset"]["filename"]],
+            )
+            and self.download
+        ):
+            downloader = SKIPPDDownloader(
+                base_folder=self._raw_folder, target_folder=self._images_folder
+            )
+            downloader.download_and_extract()
+
+        if not self._check_integrity():
+            raise RuntimeError(
+                "Dataset not found or corrupted. You can use download=True to download it"
+            )
+
+        for h5dataset_fp in os.listdir(self._raw_folder):
+            self._fill_data_info_list_and_load_to_cache(
+                os.path.join(self._raw_folder, h5dataset_fp), load_data
+            )
+
+        self.length = self.get_data_infos(self.hdf5_annotations_key)["shape"][0]
 
 
 class FolsomDataSet(VisionDataset):
