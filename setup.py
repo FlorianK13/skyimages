@@ -9,7 +9,7 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="skyimages",
-    version="0.0.2",
+    version="0.0.2a1",
     description="Downloading sky image datasets for pytorch applications",
     author="Florian Kotthoff",
     author_email="flo.pypi@posteo.de",
