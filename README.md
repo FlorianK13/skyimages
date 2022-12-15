@@ -1,5 +1,7 @@
 # skyimages
 Download sky images for solar power forecasting as pytorch-ready datasets.
+The package is still in early development and not stable. Please report bugs in the [Issues](https://github.com/FlorianK13/skyimages/issues).
+
 
 
 ## Installation using pypi
@@ -11,7 +13,7 @@ pip install skyimages
 
 ## Installation using github
 Download ``skyimages`` from
-[github](https://github.com/FlorianK13/skyimages). 
+[github](https://github.com/FlorianK13/skyimages).
 Change the CWD to the download folder `skyimages/` and install
 the package using pip.
 
