@@ -1,6 +1,6 @@
 # skyimages
 
-![PyPI - Downloads](https://img.shields.io/pypi/dm/skyimages?label=pypi%20downloads)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/skyimages?label=pypi%20downloads)](https://pypistats.org/packages/skyimages)
 [![GitHub issues by-label](https://img.shields.io/github/issues-raw/FlorianK13/skyimages/good%20first%20issue?label=Contribute%3A%20Good%20first%20issue)](https://github.com/FlorianK13/skyimages/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
 Download sky images for solar power forecasting as pytorch-ready datasets.
