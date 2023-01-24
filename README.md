@@ -47,5 +47,8 @@ testloader = torch.utils.data.DataLoader(
 )
 ```
 
+## Implemented data sets
+* [SKIPPD](https://arxiv.org/abs/2207.00913)
+
 ## Contributing
 Contributions and cooperations are highly welcome. If interested, just create an issue and we can discuss further details.
