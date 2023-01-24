@@ -1,8 +1,8 @@
-from skyimages.dataset import SKIPPDDataSet
+from skyimages.dataset import SKIPPD
 import torch
 
-traindata = SKIPPDDataSet(download=False)
-testdata = SKIPPDDataSet(download=False, train=False)
+traindata = SKIPPD(download=False)
+testdata = SKIPPD(download=False, train=False)
 
 trainloader = torch.utils.data.DataLoader(
     traindata, batch_size=200, shuffle=True, num_workers=0

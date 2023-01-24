@@ -1,5 +1,4 @@
 from torchvision.datasets import VisionDataset
-from skyimages import constants
 from skyimages.download import FolsomDownloader, SKIPPDDownloader
 from skyimages.utils import create_directories, files_already_downloaded
 import os
@@ -12,7 +11,8 @@ import h5py
 import torch
 
 
-# some of the code comes from: https://gist.github.com/branislav1991/4c143394bdad612883d148e0617bdccd
+# some of the code comes from:
+# https://gist.github.com/branislav1991/4c143394bdad612883d148e0617bdccd
 
 
 class HDF5DataSet(VisionDataset):
@@ -75,7 +75,7 @@ class HDF5DataSet(VisionDataset):
             self.data_cache[file_path].append(data)
         return len(self.data_cache[file_path]) - 1
 
-    ### __getitem__ helper functions start from here
+    # __getitem__ helper functions start from here
     def get_dataset(self, dataset_caller: str):
         """Call this function anytime you want to access one of the
         dataset. This will make sure that the data is loaded in case it is
@@ -141,7 +141,7 @@ class HDF5DataSet(VisionDataset):
         return bool([file for file in files_list if ".hdf5" in file])
 
 
-class SKIPPDDataSet(HDF5DataSet):
+class SKIPPD(HDF5DataSet):
     def __init__(
         self,
         root: str = None,
@@ -164,7 +164,8 @@ class SKIPPDDataSet(HDF5DataSet):
             If true, the training dataset is used, otherwise the test dataset is used,
             by default True
         download : bool, optional
-            If true and the dataset was not yet downloaded, it is downloaded from https://purl.stanford.edu/dj417rh1007,
+            If true and the dataset was not yet downloaded,
+            data is downloaded from https://purl.stanford.edu/dj417rh1007,
             by default False
         stepsize : int, optional
             Not yet implemented, by default 1
@@ -181,7 +182,6 @@ class SKIPPDDataSet(HDF5DataSet):
             root = constants.SKIPPD_ROOT_DIR
         super().__init__(root)
 
-        ### Define Attributes
         self.train = train
         self.download = download
         self._images_folder = self.root / "images"
@@ -190,11 +190,11 @@ class SKIPPDDataSet(HDF5DataSet):
 
         self._download_urls = constants.SKIPPD_DOWNLOAD_URLS
 
-        ### From hdf5
         self.data_info = []
         # List of dictionaries, each dictionary contains info of one dataset of a specific hdf5 file
         self.data_cache = {}
-        # Dictionary: Keys are the filepaths of the hdf5 files, value is a list of the dataset within the hdf5 file
+        # Dictionary: Keys are the filepaths of the hdf5 files,
+        # value is a list of the dataset within the hdf5 file
         self.transform = transform
 
         if self.train:
@@ -203,7 +203,6 @@ class SKIPPDDataSet(HDF5DataSet):
         else:
             self.hdf5_images_key = "/test/images_log"
             self.hdf5_annotations_key = "/test/pv_log"
-        ### END Define Attributes
 
         create_directories([self._images_folder, self._anns_folder, self._raw_folder])
 
@@ -286,7 +285,7 @@ class FolsomDataSet(VisionDataset):
             downloader = FolsomDownloader(
                 base_folder=self._raw_folder, target_folder=self._images_folder
             )
-            # downloader.download_and_extract(data_list=self._files)
+            downloader.download_and_extract(data_list=self._files)
 
         if not self._check_integrity():
             raise RuntimeError(
