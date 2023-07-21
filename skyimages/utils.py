@@ -32,8 +32,4 @@ def files_already_downloaded(raw_path: str, file_list: list) -> bool:
     all_files = []
     for _, _, files in os.walk(raw_path):
         all_files += files
-    for file in file_list:
-        if file not in all_files:
-            return False
-
-    return True
+    return all(file in all_files for file in file_list)
